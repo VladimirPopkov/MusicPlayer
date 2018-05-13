@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     android:background="@drawable/background"
     android:orientation="vertical"
-    tools:context=".TrackActivity">
+    tools:context=".TrackActivity"
+    android:id="@+id/at">
 
     <ImageView
         android:id="@+id/cover"
@@ -13,7 +14,7 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/seek_bar"
         android:layout_margin="30dp"
-        tools:src="@mipmap/ic_launcher" />
+        tools:src="@mipmap/ic_launcher"/>
 
     <TextView
         android:id="@+id/track_name"
@@ -26,7 +27,6 @@
         android:layout_toLeftOf="@+id/track_time"
         android:ellipsize="end"
         android:lines="1"
-        android:text="Ария - Вавилон.mp3 Ария - Вавилон.mp3 Ария - Вавилон.mp3"
         android:textColor="@color/text_color" />
 
     <TextView

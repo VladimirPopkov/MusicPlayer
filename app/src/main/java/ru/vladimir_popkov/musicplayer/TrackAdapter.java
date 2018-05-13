@@ -13,6 +13,7 @@ import java.util.List;
 public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
 
     List<Track> mTracks;
+    private TrackHolder.TrackClickListener mTrackClickListener;
 
     public TrackAdapter(List<Track> tracks){
         mTracks = tracks;
@@ -23,7 +24,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
     public TrackHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.list_item_track, parent, false);
-        return new TrackHolder(view);
+        return new TrackHolder(view, mTrackClickListener);
     }
 
     @Override
@@ -35,5 +36,9 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
     @Override
     public int getItemCount() {
         return mTracks.size();
+    }
+
+    public void setTrackClickListener(TrackHolder.TrackClickListener trackClickListener) {
+        mTrackClickListener = trackClickListener;
     }
 }

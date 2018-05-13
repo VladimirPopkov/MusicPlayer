@@ -1,10 +1,13 @@
 package ru.vladimir_popkov.musicplayer;
 
+import android.content.Intent;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +35,17 @@ public class TrackListActivity extends AppCompatActivity {
         mTrackList = (RecyclerView) findViewById(R.id.track_list);
         mTrackList.setLayoutManager(new LinearLayoutManager(this));
         mAdapter = new TrackAdapter(mTracks);
+        mAdapter.setTrackClickListener(new TrackHolder.TrackClickListener() {
+            @Override
+            public void onTrackClicked(Track track) {
+                /*Intent intent = new Intent(TrackListActivity.this, TrackActivity.class);
+                intent.putExtra("track", (Parcelable) track);
+                startActivity(intent);*/
+                Intent intent = new Intent(TrackListActivity.this, TrackActivity.class);
+                intent.putExtra(Track.class.getCanonicalName(), track);
+                startActivity(intent);
+            }
+        });
         mTrackList.setAdapter(mAdapter);
     }
 }

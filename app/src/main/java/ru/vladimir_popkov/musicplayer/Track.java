@@ -1,9 +1,12 @@
 package ru.vladimir_popkov.musicplayer;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by v.popkov on 05.05.2018.
  */
-public class Track {
+public class Track implements Parcelable {
 
     private String mTrackPerformer;
     private String mTrackName;
@@ -47,5 +50,35 @@ public class Track {
 
     public void setPath(String mPath) {
         this.mPath = mPath;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(mCover);
+        parcel.writeString(mPath);
+        parcel.writeString(mTrackName);
+        parcel.writeString(mTrackPerformer);
+    }
+
+    public static final Parcelable.Creator<Track> CREATOR = new Parcelable.Creator<Track>() {
+        // распаковываем объект из Parcel
+        public Track createFromParcel(Parcel in) {
+            return new Track(in);
+        }
+        public Track[] newArray(int size) {
+            return new Track[size];
+        }
+    };
+
+    private Track(Parcel parcel) {
+        mCover = parcel.readString();
+        mPath = parcel.readString();
+        mTrackName = parcel.readString();
+        mTrackPerformer = parcel.readString();
     }
 }

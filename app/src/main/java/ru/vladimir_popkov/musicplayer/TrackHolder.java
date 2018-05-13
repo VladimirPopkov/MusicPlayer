@@ -17,11 +17,23 @@ public class TrackHolder extends RecyclerView.ViewHolder {
     private TextView mTrackPerformer;
     private Track mTrack;
 
-    TrackHolder(View itemView){
+    public interface TrackClickListener {
+        void onTrackClicked(Track track);
+    }
+
+    TrackHolder(View itemView, final TrackClickListener trackClickListener){
         super(itemView);
         mTrackCover = (ImageView) itemView.findViewById(R.id.track_cover);
         mTrackName = (TextView) itemView.findViewById(R.id.track_name);
         mTrackPerformer = (TextView) itemView.findViewById(R.id.track_performer);
+        itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (trackClickListener != null) {
+                    trackClickListener.onTrackClicked(mTrack);
+                }
+            }
+        });
     }
 
     public void bindCrime(Track track){
