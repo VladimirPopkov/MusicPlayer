@@ -7,6 +7,8 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import ru.vladimir_popkov.musicplayer.data.Track;
+
 /**
  * Created by v.popkov on 05.05.2018.
  */
@@ -38,10 +40,10 @@ public class TrackHolder extends RecyclerView.ViewHolder {
 
     public void bindCrime(Track track){
         mTrack = track;
-        Picasso.with(itemView.getContext()) //передаем контекст приложения
+        Picasso.get() //передаем контекст приложения
                 .load( mTrack.getCover()) //адрес изображения
                 .into(mTrackCover); //ссылка на ImageView
-        mTrackName.setText(mTrack.getTrackName());
-        mTrackPerformer.setText(mTrack.getTrackPerformer());
+        mTrackName.setText(mTrack.getName());
+        mTrackPerformer.setText(mTrack.getArtist().getName());
     }
 }

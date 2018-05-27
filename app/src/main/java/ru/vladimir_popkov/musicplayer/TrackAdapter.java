@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 
 import java.util.List;
 
+import ru.vladimir_popkov.musicplayer.data.Track;
+
 /**
  * Created by v.popkov on 05.05.2018.
  */
