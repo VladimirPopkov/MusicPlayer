@@ -1,4 +1,4 @@
-package ru.vladimir_popkov.musicplayer;
+package ru.vladimir_popkov.musicplayer.adapters.holders;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import ru.vladimir_popkov.musicplayer.R;
 import ru.vladimir_popkov.musicplayer.data.Track;
 
 /**
@@ -23,7 +24,7 @@ public class TrackHolder extends RecyclerView.ViewHolder {
         void onTrackClicked(Track track);
     }
 
-    TrackHolder(View itemView, final TrackClickListener trackClickListener){
+    public TrackHolder(View itemView, final TrackClickListener trackClickListener){
         super(itemView);
         mTrackCover = (ImageView) itemView.findViewById(R.id.track_cover);
         mTrackName = (TextView) itemView.findViewById(R.id.track_name);

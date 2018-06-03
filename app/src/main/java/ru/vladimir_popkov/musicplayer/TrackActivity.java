@@ -1,5 +1,7 @@
 package ru.vladimir_popkov.musicplayer;
 
+import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -31,6 +33,12 @@ public class TrackActivity extends AppCompatActivity implements MediaPlayer.OnPr
     private final static Map<String, String> headers = new HashMap<>();
     static {
         headers.put("Authorization", "Basic dm92YW46bWFsb3k=");
+    }
+
+    public static void playTrack(Context context, Track track){
+        Intent intent = new Intent(context, TrackActivity.class);
+        intent.putExtra(Track.class.getCanonicalName(), track);
+        context.startActivity(intent);
     }
 
     @Override
