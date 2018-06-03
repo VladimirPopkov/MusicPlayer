@@ -128,6 +128,21 @@ public class PlayTracksService extends Service implements PlayTracksController, 
     }
 
     @Override
+    public String getTimeTrack() {
+        return String.format("%02d:%02d",
+                (mMediaPlayer.getDuration() / (1000 * 60) % 60),
+                (mMediaPlayer.getDuration() / 1000) % 60);
+    }
+
+    @Override
+    public String getTimeLeft() {
+
+        return String.format("%02d:%02d",
+                ((mMediaPlayer.getDuration() - mMediaPlayer.getCurrentPosition()) / (1000 * 60)) % 60,
+                ((mMediaPlayer.getDuration() - mMediaPlayer.getCurrentPosition()) / 1000) % 60);
+    }
+
+    @Override
     public boolean isPlaying() {
         return mMediaPlayer.isPlaying();
     }

@@ -6,5 +6,7 @@ public interface PlayTracksController {
     void seekTo(int pos);
     int getSeek();
     int getDuration();
+    String getTimeTrack();
+    String getTimeLeft();
     boolean isPlaying();
 }

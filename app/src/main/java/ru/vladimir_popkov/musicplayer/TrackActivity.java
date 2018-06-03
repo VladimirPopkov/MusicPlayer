@@ -9,6 +9,7 @@ import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.TimeFormatException;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -58,10 +59,11 @@ public class TrackActivity extends AppCompatActivity {
         setContentView(R.layout.activity_track);
 
         Track track = (Track) getIntent().getSerializableExtra(Track.class.getCanonicalName());
-        mTrackName = (TextView) findViewById(R.id.track_name);
-        mCover = (ImageView) findViewById(R.id.cover);
-        mSeekBar = (SeekBar) findViewById(R.id.seek_bar);
+        mTrackName = findViewById(R.id.track_name);
+        mCover = findViewById(R.id.cover);
+        mSeekBar = findViewById(R.id.seek_bar);
         mBtnPlay = findViewById(R.id.button_play);
+        mTrackTime = findViewById(R.id.track_time);
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -122,7 +124,6 @@ public class TrackActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         bindService(new Intent(this, PlayTracksService.class), connection, BIND_AUTO_CREATE);
-        //startProgressListener();
     }
 
     @Override
@@ -143,6 +144,8 @@ public class TrackActivity extends AppCompatActivity {
                     if (controller != null && controller.isPlaying()) {
                         mSeekBar.setMax(controller.getDuration());
                         mSeekBar.setProgress(controller.getSeek());
+                        mTrackTime.setText(controller.getTimeTrack());
+                        mTrackTime.setText(controller.getTimeLeft());
                         mProgressHandler.postDelayed(this, 1000);
                     }
                 }
