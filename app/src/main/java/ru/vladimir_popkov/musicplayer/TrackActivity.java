@@ -1,25 +1,27 @@
 package ru.vladimir_popkov.musicplayer;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.net.Uri;
+import android.content.ServiceConnection;
+import android.os.Handler;
+import android.os.IBinder;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import ru.vladimir_popkov.musicplayer.data.Track;
+import ru.vladimir_popkov.musicplayer.service.PlayTracksBinder;
+import ru.vladimir_popkov.musicplayer.service.PlayTracksController;
+import ru.vladimir_popkov.musicplayer.service.PlayTracksService;
 
-public class TrackActivity extends AppCompatActivity implements MediaPlayer.OnPreparedListener {
+public class TrackActivity extends AppCompatActivity {
 
     TextView mTrackName;
     TextView mTrackTime;
@@ -28,12 +30,21 @@ public class TrackActivity extends AppCompatActivity implements MediaPlayer.OnPr
     ImageView mBtnPlay;
     ImageView mBtnNext;
     ImageView mCover;
-    MediaPlayer mediaPlayer;
-    AudioManager am;
-    private final static Map<String, String> headers = new HashMap<>();
-    static {
-        headers.put("Authorization", "Basic dm92YW46bWFsb3k=");
-    }
+    private Handler mProgressHandler;
+    private PlayTracksController controller;
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            controller = ((PlayTracksBinder)service).getController();
+            startProgressListener();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            controller = null;
+            stopProgressListener();
+        }
+    };
 
     public static void playTrack(Context context, Track track){
         Intent intent = new Intent(context, TrackActivity.class);
@@ -46,40 +57,100 @@ public class TrackActivity extends AppCompatActivity implements MediaPlayer.OnPr
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_track);
 
+        Track track = (Track) getIntent().getSerializableExtra(Track.class.getCanonicalName());
         mTrackName = (TextView) findViewById(R.id.track_name);
         mCover = (ImageView) findViewById(R.id.cover);
+        mSeekBar = (SeekBar) findViewById(R.id.seek_bar);
+        mBtnPlay = findViewById(R.id.button_play);
 
-        Track track = (Track) getIntent().getSerializableExtra(Track.class.getCanonicalName());
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser && controller != null) {
+                    controller.seekTo(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        mBtnPlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (controller != null && !controller.isPlaying()) {
+                    controller.play();
+                    startProgressListener();
+                    updatePlayPauseBtn(true);
+                } else if (controller != null && controller.isPlaying()) {
+                    controller.pause();
+                    stopProgressListener();
+                    updatePlayPauseBtn(false);
+                }
+            }
+        });
+
+        mProgressHandler = new Handler();
+
         mTrackName.setText(track.getArtist().getName() + " - " + track.getName());
 
-        Picasso.get() //передаем контекст приложения
-                .load( track.getCover()) //адрес изображения
-                .into(mCover); //ссылка на ImageView
+        Picasso.get()
+                .load( track.getCover())
+                .into(mCover);
 
-        mediaPlayer = new MediaPlayer();
-        try {
-            //mediaPlayer.setDataSource(track.getPath());
-            mediaPlayer.setDataSource(this, Uri.parse(track.getPath()), headers);
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mediaPlayer.setOnPreparedListener(this);
-            mediaPlayer.prepareAsync();
-        } catch (IOException e) {
-            e.printStackTrace();
+        PlayTracksService.start(this, track.getPath());
+        startProgressListener();
+        updatePlayPauseBtn(true);
+    }
+
+    private void updatePlayPauseBtn(boolean isPlaying) {
+        if (isPlaying) {
+            mBtnPlay.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.pause));
+        } else {
+            mBtnPlay.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.play));
         }
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mediaPlayer != null) {
-            mediaPlayer.pause();
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
+    protected void onStart() {
+        super.onStart();
+        bindService(new Intent(this, PlayTracksService.class), connection, BIND_AUTO_CREATE);
+        //startProgressListener();
     }
 
     @Override
-    public void onPrepared(MediaPlayer mediaPlayer) {
-        mediaPlayer.start();
+    protected void onStop() {
+        super.onStop();
+        stopProgressListener();
+        unbindService(connection);
+        controller = null;
+    }
+
+
+    private void startProgressListener() {
+        mProgressHandler.removeCallbacks(null);
+        if (controller != null) {
+            mProgressHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (controller != null && controller.isPlaying()) {
+                        mSeekBar.setMax(controller.getDuration());
+                        mSeekBar.setProgress(controller.getSeek());
+                        mProgressHandler.postDelayed(this, 1000);
+                    }
+                }
+            });
+        }
+    }
+
+    private void stopProgressListener() {
+        mProgressHandler.removeCallbacks(null);
     }
 }
