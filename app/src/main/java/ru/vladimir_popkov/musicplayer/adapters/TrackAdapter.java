@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ru.vladimir_popkov.musicplayer.R;
@@ -16,10 +17,10 @@ import ru.vladimir_popkov.musicplayer.data.Track;
  */
 public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
 
-    private List<Track> mTracks;
+    private ArrayList<Track> mTracks;
     private TrackHolder.TrackClickListener mTrackClickListener;
 
-    public TrackAdapter(List<Track> tracks){
+    public TrackAdapter(ArrayList<Track> tracks){
         mTracks = tracks;
         notifyDataSetChanged();
     }
@@ -52,5 +53,9 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackHolder> {
             mTracks.addAll(tracks);
         }
         notifyDataSetChanged();
+    }
+
+    public ArrayList<Track> getTracks() {
+        return mTracks;
     }
 }

@@ -54,4 +54,22 @@ public class Artist implements Serializable{
                 ", mAlboms=" + mAlboms +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Artist artist = (Artist) o;
+
+        if (!mId.equals(artist.mId)) return false;
+        return mName.equals(artist.mName);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mId.hashCode();
+        result = 31 * result + mName.hashCode();
+        return result;
+    }
 }

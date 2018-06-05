@@ -27,6 +27,7 @@ import ru.vladimir_popkov.musicplayer.network.MusicAPI;
 public class AlbomDetailsFragments extends Fragment {
     private TrackAdapter mAdapter;
     private TextView mAlbomName;
+    View mProgress;
     private Albom mAlbom;
 
     public static AlbomDetailsFragments getInstance(Albom albom){
@@ -42,13 +43,15 @@ public class AlbomDetailsFragments extends Fragment {
                              Bundle savedInstanceState) {
         mAlbom =(Albom) getArguments().getSerializable(Albom.class.getCanonicalName());
         final View view = inflater.inflate(R.layout.fragment_detail_albom, null);
-        mAlbomName = (TextView)view.findViewById(R.id.albom_name);
-        RecyclerView tracksList = (RecyclerView) view.findViewById(R.id.data_list);
+        mAlbomName = view.findViewById(R.id.albom_name);
+        RecyclerView tracksList = view.findViewById(R.id.data_list);
+        mProgress = view.findViewById(R.id.progress);
         mAdapter = new TrackAdapter(new ArrayList<Track>());
         mAdapter.setTrackClickListener(new TrackHolder.TrackClickListener() {
             @Override
             public void onTrackClicked(Track track) {
-                TrackActivity.playTrack(view.getContext(), track);
+                ArrayList<Track> tracks = mAdapter.getTracks();
+                TrackActivity.playTrack(view.getContext(), tracks, tracks.indexOf(track));
             }
         });
         tracksList.setLayoutManager(new LinearLayoutManager(view.getContext()));
@@ -60,16 +63,24 @@ public class AlbomDetailsFragments extends Fragment {
     }
 
     private void loadAlbom(){
+        mProgress.setVisibility(View.VISIBLE);
+        mProgress.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
         MusicAPI.getMusicService().getAlbom(mAlbom.getId()).enqueue(new Callback<Albom>() {
             @Override
             public void onResponse(Call<Albom> call, Response<Albom> response) {
+                mProgress.setVisibility(View.GONE);
                 mAlbom = response.body();
                 updateUI();
             }
 
             @Override
             public void onFailure(Call<Albom> call, Throwable t) {
-                Log.d("vova", "onFailure: " + t);
+                mProgress.setVisibility(View.GONE);
             }
         });
     }

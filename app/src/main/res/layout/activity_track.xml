@@ -16,6 +16,15 @@
         android:layout_margin="30dp"
         tools:src="@mipmap/ic_launcher"/>
 
+    <ImageView
+        android:id="@+id/stop_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="10dp"
+        android:layout_alignParentRight="true"
+        android:src="@mipmap/btn_ic_stop"
+        />
+
     <TextView
         android:id="@+id/track_name"
         android:layout_width="wrap_content"

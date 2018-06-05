@@ -24,6 +24,7 @@ import ru.vladimir_popkov.musicplayer.network.MusicAPI;
 
 public class ArtistListFragments extends Fragment {
     private ArtistAdapter mAdapter;
+    private View mProgress;
     private List<Artist> mArtists = new ArrayList<>();
 
     @Override
@@ -31,6 +32,7 @@ public class ArtistListFragments extends Fragment {
                              Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_list, null);
         RecyclerView artistList = (RecyclerView) view.findViewById(R.id.data_list);
+        mProgress = view.findViewById(R.id.progress);
         mAdapter = new ArtistAdapter(mArtists);
         mAdapter.setArtistClickListener(new ArtistHolder.ArtistClickListener() {
             @Override
@@ -46,9 +48,17 @@ public class ArtistListFragments extends Fragment {
     }
 
     private void loadArtists(){
+        mProgress.setVisibility(View.VISIBLE);
+        mProgress.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
         MusicAPI.getMusicService().getArtists().enqueue(new Callback<List<Artist>>() {
             @Override
             public void onResponse(Call<List<Artist>> call, Response<List<Artist>> response) {
+                mProgress.setVisibility(View.GONE);
                 mArtists.clear();
                 mArtists.addAll(response.body());
                 mAdapter.notifyDataSetChanged();
@@ -56,7 +66,7 @@ public class ArtistListFragments extends Fragment {
 
             @Override
             public void onFailure(Call<List<Artist>> call, Throwable t) {
-                Log.d("vova", "onFailure: " + t);
+                mProgress.setVisibility(View.GONE);
             }
         });
     }

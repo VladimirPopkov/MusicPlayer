@@ -72,4 +72,26 @@ public class Track implements Serializable {
                 ", mAlbom='" + mAlbom + '\'' +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Track track = (Track) o;
+
+        if (!mId.equals(track.mId)) return false;
+        if (!mName.equals(track.mName)) return false;
+        if (!mArtist.equals(track.mArtist)) return false;
+        return mAlbom.equals(track.mAlbom);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mId.hashCode();
+        result = 31 * result + mName.hashCode();
+        result = 31 * result + mArtist.hashCode();
+        result = 31 * result + mAlbom.hashCode();
+        return result;
+    }
 }
