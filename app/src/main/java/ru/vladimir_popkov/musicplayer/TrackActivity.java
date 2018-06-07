@@ -31,10 +31,7 @@ public class TrackActivity extends AppCompatActivity {
     private TextView mTrackName;
     private TextView mTrackTime;
     private SeekBar mSeekBar;
-    private ImageView mBtnPrevious;
     private ImageView mBtnPlay;
-    private ImageView mBtnNext;
-    private ImageView mBtnStop;
     private ImageView mCover;
     private Handler mProgressHandler;
     private PlayTracksController controller;
@@ -70,13 +67,10 @@ public class TrackActivity extends AppCompatActivity {
 
         mTrackName = findViewById(R.id.track_name);
         mCover = findViewById(R.id.cover);
-        mSeekBar = findViewById(R.id.seek_bar);
         mBtnPlay = findViewById(R.id.button_play);
-        mBtnPrevious = findViewById(R.id.button_previous);
-        mBtnStop = findViewById(R.id.stop_btn);
-        mBtnNext = findViewById(R.id.button_next);
         mTrackTime = findViewById(R.id.track_time);
 
+        mSeekBar = findViewById(R.id.seek_bar);
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -102,16 +96,14 @@ public class TrackActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (controller != null && !controller.isPlaying()) {
                     controller.play();
-                    startProgressListener();
                     updatePlayPauseBtn(true);
                 } else if (controller != null && controller.isPlaying()) {
                     controller.pause();
-                    stopProgressListener();
                     updatePlayPauseBtn(false);
                 }
             }
         });
-        mBtnPrevious.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.button_previous).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (controller != null) {
@@ -121,7 +113,7 @@ public class TrackActivity extends AppCompatActivity {
             }
         });
 
-        mBtnNext.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.button_next).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (controller != null) {
@@ -130,7 +122,7 @@ public class TrackActivity extends AppCompatActivity {
                 }
             }
         });
-        mBtnStop.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.stop_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 PlayTracksService.stop(TrackActivity.this);
@@ -142,7 +134,6 @@ public class TrackActivity extends AppCompatActivity {
             PlayTracksService.start(this,
                     (ArrayList<Track>) getIntent().getSerializableExtra(TRACKS),
                     getIntent().getIntExtra(POS, 0));
-            updatePlayPauseBtn(true);
         }
     }
 
@@ -159,7 +150,7 @@ public class TrackActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        bindService(new Intent(this, PlayTracksService.class), connection, BIND_AUTO_CREATE);
+        bindService(new Intent(this, PlayTracksService.class), connection, 0);
     }
 
     @Override
@@ -171,12 +162,12 @@ public class TrackActivity extends AppCompatActivity {
     }
 
     private void startProgressListener() {
-        mProgressHandler.removeCallbacks(null);
+        stopProgressListener();
         if (controller != null) {
             mProgressHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (controller != null && controller.isPlaying()) {
+                    if (controller != null) {
                         updateInfo();
                         mProgressHandler.postDelayed(this, 1000);
                     }

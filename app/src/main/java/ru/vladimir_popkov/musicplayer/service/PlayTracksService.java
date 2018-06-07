@@ -1,6 +1,8 @@
 package ru.vladimir_popkov.musicplayer.service;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -9,6 +11,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,10 +55,16 @@ public class PlayTracksService extends Service implements PlayTracksController {
     public void onCreate() {
         super.onCreate();
         mMediaPlayer = new MediaPlayer();
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
-            public void onCompletion(MediaPlayer mp) {
-                nextTrack();
+            public void onPrepared(MediaPlayer mp) {
+                mMediaPlayer.start();
+                mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        nextTrack();
+                    }
+                });
             }
         });
     }
@@ -76,11 +85,7 @@ public class PlayTracksService extends Service implements PlayTracksController {
             if (START_FOREGROUND.equals(intent.getAction())) {
                 mTrackList = (ArrayList<Track>) intent.getSerializableExtra(TRACKS);
                 mCurrentPos = intent.getIntExtra(POS, 0);
-                Track track = mTrackList.get(mCurrentPos);
-                if (mMediaPlayer != null && !mMediaPlayer.isPlaying()) {
-                    startForeground(1, createNotif(track.getArtist().getName(), track.getName(), R.drawable.play));
-                }
-                start(track.getPath());
+                start(mTrackList.get(mCurrentPos));
             } else if (STOP_FOREGROUND.equals(intent.getAction())) {
                 stopForeground(true);
                 stop();
@@ -95,15 +100,16 @@ public class PlayTracksService extends Service implements PlayTracksController {
         return binder;
     }
 
-    public void start(String path) {
+    public void start(Track track) {
         try {
             mMediaPlayer.reset();
-            mMediaPlayer.setDataSource(this, Uri.parse(path), headers);
-            mMediaPlayer.prepare();
-            mMediaPlayer.start();
+            mMediaPlayer.setDataSource(this, Uri.parse(track.getPath()), headers);
+            mMediaPlayer.setOnCompletionListener(null);
+            mMediaPlayer.prepareAsync();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        showNotif(track);
     }
 
     public void stop() {
@@ -146,6 +152,12 @@ public class PlayTracksService extends Service implements PlayTracksController {
         return mMediaPlayer.isPlaying();
     }
 
+    private void showNotif(Track track) {
+        if (mMediaPlayer != null) {
+            startForeground(1, createNotif(track.getArtist().getName(), track.getName(), R.drawable.play));
+        }
+    }
+
     private Notification createNotif(String title, String text, int iconId) {
         Intent notifyIntent = new Intent(this, TrackActivity.class);
         notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -155,8 +167,12 @@ public class PlayTracksService extends Service implements PlayTracksController {
                 notifyIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT
         );
+        String CHANNEL_ID = "Player channel";
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String CHANNEL_ID = "channel_01";
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_ID, NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("Channel for music player");
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
             return new Notification.Builder(this, CHANNEL_ID)
                     .setContentTitle(title)
                     .setContentText(text)
@@ -164,12 +180,12 @@ public class PlayTracksService extends Service implements PlayTracksController {
                     .setContentIntent(notifyPendingIntent)
                     .build();
         } else {
-            return new Notification.Builder(this)
+            return new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setContentTitle(title)
                     .setContentText(text)
                     .setSmallIcon(iconId)
                     .setContentIntent(notifyPendingIntent)
-                    .setPriority(Notification.PRIORITY_DEFAULT)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .build();
         }
     }
@@ -178,7 +194,7 @@ public class PlayTracksService extends Service implements PlayTracksController {
     public void nextTrack() {
         if (mCurrentPos < mTrackList.size() - 1) {
             mCurrentPos++;
-            start(mTrackList.get(mCurrentPos).getPath());
+            start(mTrackList.get(mCurrentPos));
         }
     }
 
@@ -186,7 +202,7 @@ public class PlayTracksService extends Service implements PlayTracksController {
     public void prevTrack() {
         if (mCurrentPos > 0) {
             mCurrentPos--;
-            start(mTrackList.get(mCurrentPos).getPath());
+            start(mTrackList.get(mCurrentPos));
         }
     }
 
